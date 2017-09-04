@@ -25,5 +25,5 @@ If you use this code in your project, please cite use using:
 
 ### Getting started ###
   - demo.py demonstrates the results on the ProposalFlow dataset
-  - train.py is the main training script. For some standard training options, see scripts folder
+  - train.py is the main training script
   - eval_pf.py evaluates on the ProposalFlow dataset

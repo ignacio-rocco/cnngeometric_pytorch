@@ -65,7 +65,7 @@ class PFDataset(Dataset):
         # get image size
         im_size = np.asarray(image.shape)
         
-        # resize to CNN size
+        # convert to torch Variable
         image = np.expand_dims(image.transpose((2,0,1)),0)
         image = torch.Tensor(image.astype(np.float32))
         image_var = Variable(image,requires_grad=False)

@@ -5,6 +5,8 @@ from skimage import io
 import pandas as pd
 import numpy as np
 from torch.utils.data import Dataset
+from geotnf.transformation import GeometricTnf
+from torch.autograd import Variable
 
 class SynthDataset(Dataset):
     """
@@ -21,8 +23,8 @@ class SynthDataset(Dataset):
             
     """
 
-    def __init__(self, csv_file, training_image_path, geometric_model='affine', use_cuda=True, transform=None):
-        self.use_cuda = use_cuda
+    def __init__(self, csv_file, training_image_path, output_size=(480,640), geometric_model='affine', transform=None):
+        self.out_h, self.out_w = output_size
         # read csv file
         self.train_data = pd.read_csv(csv_file)
         self.img_names = self.train_data.iloc[:,0]
@@ -31,6 +33,7 @@ class SynthDataset(Dataset):
         self.training_image_path = training_image_path
         self.transform = transform
         self.geometric_model = geometric_model
+        self.affineTnf = GeometricTnf(out_h=self.out_h, out_w=self.out_w, use_cuda = False) 
         
     def __len__(self):
         return len(self.train_data)
@@ -57,6 +60,10 @@ class SynthDataset(Dataset):
         
         # permute order of image to CHW
         image = image.transpose(1,2).transpose(0,1)
+                
+        # Resize image using bilinear sampling with identity affine tnf
+        if image.size()[0]!=self.out_h or image.size()[1]!=self.out_w:
+            image = self.affineTnf(Variable(image.unsqueeze(0),requires_grad=False)).data.squeeze(0)
                 
         sample = {'image': image, 'theta': theta}
         
