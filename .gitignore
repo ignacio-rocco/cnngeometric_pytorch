@@ -4,3 +4,4 @@ datasets/
 *.ipynb
 *.bak
 *.png
+.DS_Store
