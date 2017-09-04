@@ -16,6 +16,7 @@ from skimage import io
 import warnings
 warnings.filterwarnings('ignore')
 
+# for compatibility with Python 2
 try:
     input = raw_input
 except NameError:
@@ -36,12 +37,14 @@ parser = argparse.ArgumentParser(description='CNNGeometric PyTorch implementatio
 parser.add_argument('--model-aff', type=str, default='trained_models/best_checkpoint_adam_affine_grid_loss.pth.tar', help='Trained affine model filename')
 parser.add_argument('--model-tps', type=str, default='trained_models/best_checkpoint_adam_tps_grid_loss.pth.tar', help='Trained TPS model filename')
 parser.add_argument('--pf-path', type=str, default='datasets/PF-dataset', help='Path to PF dataset')
-parser.add_argument('--use-cuda', type=str_to_bool, nargs='?', const=True, default=True, help='Perform computation in GPU')
 
 args = parser.parse_args('')
 
+use_cuda = torch.cuda.is_available()
+
 do_aff = not args.model_aff==''
 do_tps = not args.model_tps==''
+
 
 # Download dataset if needed
 download_PF_willow('datasets/')
@@ -49,17 +52,17 @@ download_PF_willow('datasets/')
 # Create model
 print('Creating CNN model...')
 if do_aff:
-    model_aff = CNNGeometric(use_cuda=args.use_cuda,geometric_model='affine')
+    model_aff = CNNGeometric(use_cuda=use_cuda,geometric_model='affine')
 if do_tps:
-    model_tps = CNNGeometric(use_cuda=args.use_cuda,geometric_model='tps')
+    model_tps = CNNGeometric(use_cuda=use_cuda,geometric_model='tps')
 
 # Load trained weights
 print('Loading trained model weights...')
 if do_aff:
-    checkpoint = torch.load(args.model_aff)
+    checkpoint = torch.load(args.model_aff, map_location=lambda storage, loc: storage)
     model_aff.load_state_dict(checkpoint['state_dict'])
 if do_tps:
-    checkpoint = torch.load(args.model_tps)
+    checkpoint = torch.load(args.model_tps, map_location=lambda storage, loc: storage)
     model_tps.load_state_dict(checkpoint['state_dict'])
 
 # Dataset and dataloader
@@ -68,14 +71,14 @@ dataset = PFDataset(csv_file=os.path.join(args.pf_path, 'test_pairs_pf.csv'),
                     transform=NormalizeImageDict(['source_image','target_image']))
 dataloader = DataLoader(dataset, batch_size=1,
                         shuffle=True, num_workers=4)
-batchTensorToVars = BatchTensorToVars(use_cuda=args.use_cuda)
+batchTensorToVars = BatchTensorToVars(use_cuda=use_cuda)
 
 # Instantiate point transformer
-pt = PointTnf(use_cuda=args.use_cuda)
+pt = PointTnf(use_cuda=use_cuda)
 
 # Instatiate image transformers
-tpsTnf = GeometricTnf(geometric_model='tps')
-affTnf = GeometricTnf(geometric_model='affine')
+tpsTnf = GeometricTnf(geometric_model='tps', use_cuda=use_cuda)
+affTnf = GeometricTnf(geometric_model='affine', use_cuda=use_cuda)
 
 
 for i, batch in enumerate(dataloader):
@@ -135,18 +138,25 @@ for i, batch in enumerate(dataloader):
         N_subplots = 2+int(do_aff)+int(do_tps)+int(do_aff and do_tps)
         fig, axs = plt.subplots(1,N_subplots)
         axs[0].imshow(source_image)
+        axs[0].set_title('src')
         axs[1].imshow(target_image)
+        axs[1].set_title('tgt')
         subplot_idx = 2
         if do_aff:
             axs[subplot_idx].imshow(warped_image_aff)
+            axs[subplot_idx].set_title('aff')
             subplot_idx +=1 
         if do_tps:
             axs[subplot_idx].imshow(warped_image_tps)
+            axs[subplot_idx].set_title('tps')
             subplot_idx +=1 
         if do_aff and do_tps:
             axs[subplot_idx].imshow(warped_image_aff_tps)
+            axs[subplot_idx].set_title('aff+tps')
     
-        fig.set_dpi(200)
+        for i in range(N_subplots):
+            axs[i].axis('off')
+        print('Showing results. Close figure window to continue')
         plt.show()
     else:
         print('No display found. Writing results to:')

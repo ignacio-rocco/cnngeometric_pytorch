@@ -31,4 +31,22 @@ def download_PF_willow(dest="datasets"):
         with open(file_path, 'wb') as f:
             f.write(data.read())
 
+def download_pascal(dest="datasets/pascal-voc11"):
+    if not exists(dest):
+        makedirs(dest)
+        url = "http://host.robots.ox.ac.uk/pascal/VOC/voc2011/VOCtrainval_25-May-2011.tar"
+        print("downloading url ", url)
 
+        data = urllib.request.urlopen(url)
+        
+        file_path = join(dest, basename(url))
+        with open(file_path, 'wb') as f:
+            f.write(data.read())
+
+        print("Extracting data")
+        zip_ref = tarfile.open(file_path, 'r')
+        zip_ref.extractall(dest)
+        zip_ref.close()
+        
+        remove(file_path)
+        

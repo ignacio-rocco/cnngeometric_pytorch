@@ -29,9 +29,10 @@ parser = argparse.ArgumentParser(description='CNNGeometric PyTorch implementatio
 parser.add_argument('--model-aff', type=str, default='trained_models/best_checkpoint_adam_affine_grid_loss.pth.tar', help='Trained affine model filename')
 parser.add_argument('--model-tps', type=str, default='trained_models/best_checkpoint_adam_tps_grid_loss.pth.tar', help='Trained TPS model filename')
 parser.add_argument('--pf-path', type=str, default='datasets/PF-dataset', help='Path to PF dataset')
-parser.add_argument('--use-cuda', type=str_to_bool, nargs='?', const=True, default=True, help='Perform computation in GPU')
 
 args = parser.parse_args()
+
+use_cuda = torch.cuda.is_available()
 
 do_aff = not args.model_aff==''
 do_tps = not args.model_tps==''
@@ -42,33 +43,39 @@ download_PF_willow('datasets/')
 # Create model
 print('Creating CNN model...')
 if do_aff:
-    model_aff = CNNGeometric(use_cuda=args.use_cuda,geometric_model='affine')
+    model_aff = CNNGeometric(use_cuda=use_cuda,geometric_model='affine')
 if do_tps:
-    model_tps = CNNGeometric(use_cuda=args.use_cuda,geometric_model='tps')
+    model_tps = CNNGeometric(use_cuda=use_cuda,geometric_model='tps')
 
 # Load trained weights
 print('Loading trained model weights...')
 if do_aff:
-    checkpoint = torch.load(args.model_aff)
+    checkpoint = torch.load(args.model_aff, map_location=lambda storage, loc: storage)
     model_aff.load_state_dict(checkpoint['state_dict'])
 if do_tps:
-    checkpoint = torch.load(args.model_tps)
+    checkpoint = torch.load(args.model_tps, map_location=lambda storage, loc: storage)
     model_tps.load_state_dict(checkpoint['state_dict'])
 
 # Dataset and dataloader
 dataset = PFDataset(csv_file=os.path.join(args.pf_path, 'test_pairs_pf.csv'),
                     training_image_path=args.pf_path,
                     transform=NormalizeImageDict(['source_image','target_image']))
-dataloader = DataLoader(dataset, batch_size=16,
+if use_cuda:
+    batch_size=16
+else:
+    batch_size=1
+
+dataloader = DataLoader(dataset, batch_size=batch_size,
                         shuffle=False, num_workers=4)
-batchTensorToVars = BatchTensorToVars(use_cuda=args.use_cuda)
+
+batchTensorToVars = BatchTensorToVars(use_cuda=use_cuda)
 
 # Instantiate point transformer
-pt = PointTnf(use_cuda=args.use_cuda)
+pt = PointTnf(use_cuda=use_cuda)
 
 # Instatiate image transformers
-tpsTnf = GeometricTnf(geometric_model='tps')
-affTnf = GeometricTnf(geometric_model='affine')
+tpsTnf = GeometricTnf(geometric_model='tps',use_cuda=use_cuda)
+affTnf = GeometricTnf(geometric_model='affine',use_cuda=use_cuda)
 
 # Compute PCK
 def correct_keypoints(source_points,warped_points,L_pck,alpha=0.1):

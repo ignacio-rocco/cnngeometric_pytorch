@@ -24,7 +24,7 @@ class GeometricTnf(object):
         if geometric_model=='affine':
             self.gridGen = AffineGridGen(out_h, out_w)
         elif geometric_model=='tps':
-            self.gridGen = TpsGridGen(out_h, out_w)
+            self.gridGen = TpsGridGen(out_h, out_w, use_cuda=use_cuda)
         self.theta_identity = torch.Tensor(np.expand_dims(np.array([[1,0,0],[0,1,0]]),0).astype(np.float32))
         if use_cuda:
             self.theta_identity = self.theta_identity.cuda()

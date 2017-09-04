@@ -1,6 +1,7 @@
 from __future__ import print_function, division
 import argparse
 import os
+from os.path import exists, join, basename
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,6 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from model.cnn_geometric_model import CNNGeometric
 from model.loss import TransformedGridLoss
 from data.synth_dataset import SynthDataset
+from data.download_datasets import download_pascal
 from geotnf.transformation import SynthPairTnf
 from image.normalization import NormalizeImageDict
 from util.train_test_fn import train, test
@@ -25,7 +27,8 @@ print('CNNGeometric training script')
 # Argument parsing
 parser = argparse.ArgumentParser(description='CNNGeometric PyTorch implementation')
 # Paths
-parser.add_argument('--training-tnf-csv', type=str, default='', help='path to training transformation csv')
+parser.add_argument('--training-dataset', type=str, default='pascal', help='dataset to use for training')
+parser.add_argument('--training-tnf-csv', type=str, default='', help='path to training transformation csv folder')
 parser.add_argument('--training-image-path', type=str, default='', help='path to folder containing training images')
 parser.add_argument('--trained-models-dir', type=str, default='trained_models', help='path to trained models folder')
 parser.add_argument('--trained-models-fn', type=str, default='checkpoint_adam', help='trained model filename')
@@ -41,28 +44,40 @@ parser.add_argument('--geometric-model', type=str, default='affine', help='geome
 parser.add_argument('--feature-L2-normalization', type=str_to_bool, nargs='?', const=True, default=True, help='perform L2 normalization to extracted image features')
 parser.add_argument('--matches-L2-normalization', type=str_to_bool, nargs='?', const=True, default=True, help='perform L2 normalization to match-score tensor')
 parser.add_argument('--batch-normalization', type=str_to_bool, nargs='?', const=True, default=True, help='perform batch normalization in the regression CNN')
-parser.add_argument('--use-cuda', type=str_to_bool, nargs='?', const=True, default=True, help='Perform computation in GPU')
 parser.add_argument('--use-mse-loss', type=str_to_bool, nargs='?', const=True, default=False, help='Use MSE loss on tnf. parameters')
 
 args = parser.parse_args()
 
+use_cuda = torch.cuda.is_available()
+
 # Seed
 torch.manual_seed(args.seed)
-torch.cuda.manual_seed(args.seed)
+if use_cuda:
+    torch.cuda.manual_seed(args.seed)
+
+# Download dataset if needed and set paths
+if args.training_dataset == 'pascal':
+    if args.training_image_path == '':
+        download_pascal('datasets/pascal-voc11/')
+        args.training_image_path = 'datasets/pascal-voc11/'
+    if args.training_tnf_csv == '' and args.geometric_model=='affine':
+        args.training_tnf_csv = 'training_data/pascal-synth-aff'
+    elif args.training_tnf_csv == '' and args.geometric_model=='tps':
+        args.training_tnf_csv = 'training_data/pascal-synth-tps'
 
 # CNN model and loss
 print('Creating CNN model...')
 
-model = CNNGeometric(use_cuda=args.use_cuda,geometric_model=args.geometric_model)
+model = CNNGeometric(use_cuda=use_cuda,geometric_model=args.geometric_model)
 
 if args.use_mse_loss:
     print('Using MSE loss...')
     loss = nn.MSELoss()
 else:
     print('Using grid loss...')
-    loss = TransformedGridLoss(use_cuda=args.use_cuda,geometric_model=args.geometric_model)
+    loss = TransformedGridLoss(use_cuda=use_cuda,geometric_model=args.geometric_model)
 
-    
+
 # Dataset and dataloader
 dataset = SynthDataset(geometric_model=args.geometric_model,
                        csv_file=os.path.join(args.training_tnf_csv,'train.csv'),
@@ -81,7 +96,7 @@ dataloader_test = DataLoader(dataset_test, batch_size=args.batch_size,
                         shuffle=True, num_workers=4)
 
 
-pair_generation_tnf = SynthPairTnf(geometric_model=args.geometric_model)
+pair_generation_tnf = SynthPairTnf(geometric_model=args.geometric_model,use_cuda=use_cuda)
 
 # Optimizer
 optimizer = optim.Adam(model.FeatureRegression.parameters(), lr=args.lr)
