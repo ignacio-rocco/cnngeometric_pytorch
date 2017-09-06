@@ -41,9 +41,6 @@ parser.add_argument('--weight-decay', type=float, default=0, help='weight decay 
 parser.add_argument('--seed', type=int, default=1, help='Pseudo-RNG seed')
 # Model parameters
 parser.add_argument('--geometric-model', type=str, default='affine', help='geometric model to be regressed at output: affine or tps')
-parser.add_argument('--feature-L2-normalization', type=str_to_bool, nargs='?', const=True, default=True, help='perform L2 normalization to extracted image features')
-parser.add_argument('--matches-L2-normalization', type=str_to_bool, nargs='?', const=True, default=True, help='perform L2 normalization to match-score tensor')
-parser.add_argument('--batch-normalization', type=str_to_bool, nargs='?', const=True, default=True, help='perform batch normalization in the regression CNN')
 parser.add_argument('--use-mse-loss', type=str_to_bool, nargs='?', const=True, default=False, help='Use MSE loss on tnf. parameters')
 
 args = parser.parse_args()
