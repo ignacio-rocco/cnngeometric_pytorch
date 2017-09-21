@@ -38,7 +38,7 @@ parser.add_argument('--model-aff', type=str, default='trained_models/best_checkp
 parser.add_argument('--model-tps', type=str, default='trained_models/best_checkpoint_adam_tps_grid_loss.pth.tar', help='Trained TPS model filename')
 parser.add_argument('--pf-path', type=str, default='datasets/PF-dataset', help='Path to PF dataset')
 
-args = parser.parse_args('')
+args = parser.parse_args()
 
 use_cuda = torch.cuda.is_available()
 
