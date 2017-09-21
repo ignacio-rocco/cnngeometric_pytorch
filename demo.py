@@ -34,8 +34,8 @@ print('CNNGeometric PF demo script')
 # Argument parsing
 parser = argparse.ArgumentParser(description='CNNGeometric PyTorch implementation')
 # Paths
-parser.add_argument('--model-aff', type=str, default='trained_models/best_checkpoint_adam_affine_grid_loss.pth.tar', help='Trained affine model filename')
-parser.add_argument('--model-tps', type=str, default='trained_models/best_checkpoint_adam_tps_grid_loss.pth.tar', help='Trained TPS model filename')
+parser.add_argument('--model-aff', type=str, default='trained_models/best_pascal_checkpoint_adam_affine_grid_loss.pth.tar', help='Trained affine model filename')
+parser.add_argument('--model-tps', type=str, default='trained_models/best_pascal_checkpoint_adam_tps_grid_loss.pth.tar', help='Trained TPS model filename')
 parser.add_argument('--pf-path', type=str, default='datasets/PF-dataset', help='Path to PF dataset')
 
 args = parser.parse_args()

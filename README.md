@@ -27,3 +27,27 @@ If you use this code in your project, please cite use using:
   - demo.py demonstrates the results on the ProposalFlow dataset
   - train.py is the main training script
   - eval_pf.py evaluates on the ProposalFlow dataset
+  
+### Trained models ###
+
+# Using Streetview-synth dataset
+  - [streetviewsynth-aff](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_affine_grid_loss.pth.tar)
+  - [streetviewsynth-tps](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_tps_grid_loss.pth.tar)
+
+### Results on PF
+```
+PCK affine: 0.472
+PCK tps: 0.513
+PCK affine+tps: 0.572
+```
+
+# Using Pascal-synth dataset
+  - [pascal-aff](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_affine_grid_loss.pth.tar)
+  - [pascal-tps](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_tps_grid_loss.pth.tar)
+
+### Results on PF
+```
+PCK affine: 0.478
+PCK tps: 0.428
+PCK affine+tps: 0.568
+```
