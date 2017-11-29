@@ -30,24 +30,14 @@ If you use this code in your project, please cite use using:
   
 ## Trained models ###
 
-### Using Streetview-synth dataset
-  - [streetviewsynth-aff](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_affine_grid_loss.pth.tar)
-  - [streetviewsynth-tps](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_tps_grid_loss.pth.tar)
+#### Using Streetview-synth dataset + VGG
+  - [[Affine]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_affine_grid_loss.pth.tar), [[TPS]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_tps_grid_loss.pth.tar)
+  - Results on PF: `PCK affine: 0.472`, `PCK tps: 0.513`, `PCK affine+tps: 0.572`
 
-#### Results on PF
-```
-PCK affine: 0.472
-PCK tps: 0.513
-PCK affine+tps: 0.572
-```
+#### Using Pascal-synth dataset  + VGG
+  - [[Affine]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_affine_grid_loss.pth.tar), [[TPS]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_tps_grid_loss.pth.tar)
+  - Results on PF: `PCK affine: 0.478`, `PCK tps: 0.428`, `PCK affine+tps: 0.568`
 
-### Using Pascal-synth dataset
-  - [pascal-aff](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_affine_grid_loss.pth.tar)
-  - [pascal-tps](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_tps_grid_loss.pth.tar)
-
-#### Results on PF
-```
-PCK affine: 0.478
-PCK tps: 0.428
-PCK affine+tps: 0.568
-```
+#### Using Pascal-synth dataset  + ResNet-101
+  - [[Affine]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_affine_grid_loss_resnet_random.pth.tar), [[TPS]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_tps_grid_loss_resnet_random.pth.tar)
+  - Results on PF: `PCK affine: 0.559`, `PCK tps: 0.582`, `PCK affine+tps: 0.676`
