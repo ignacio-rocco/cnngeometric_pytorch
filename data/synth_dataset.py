@@ -1,6 +1,7 @@
 from __future__ import print_function, division
 import torch
 import os
+from os.path import exists, join, basename
 from skimage import io
 import pandas as pd
 import numpy as np
@@ -23,7 +24,13 @@ class SynthDataset(Dataset):
             
     """
 
-    def __init__(self, csv_file, training_image_path, output_size=(480,640), geometric_model='affine', transform=None):
+    def __init__(self, csv_file, training_image_path, output_size=(480,640), geometric_model='affine', transform=None,
+                 random_sample=False, random_t=0.5, random_s=0.5, random_alpha=1/6, random_t_tps=0.4):
+        self.random_sample = random_sample
+        self.random_t = random_t
+        self.random_t_tps = random_t_tps
+        self.random_alpha = random_alpha
+        self.random_s = random_s
         self.out_h, self.out_w = output_size
         # read csv file
         self.train_data = pd.read_csv(csv_file)
@@ -44,15 +51,28 @@ class SynthDataset(Dataset):
         image = io.imread(img_name)
         
         # read theta
-        theta = self.theta_array[idx, :]
-        
-        if self.geometric_model=='affine':
-            # reshape theta to 2x3 matrix [A|t] where 
-            # first row corresponds to X and second to Y
-#            theta = theta[[0,1,4,2,3,5]].reshape(2,3)
-            theta = theta[[3,2,5,1,0,4]].reshape(2,3)
-        elif self.geometric_model=='tps':
-            theta = np.expand_dims(np.expand_dims(theta,1),2)
+        if self.random_sample==False:
+            theta = self.theta_array[idx, :]
+
+            if self.geometric_model=='affine':
+                # reshape theta to 2x3 matrix [A|t] where 
+                # first row corresponds to X and second to Y
+                theta = theta[[3,2,5,1,0,4]].reshape(2,3)
+            elif self.geometric_model=='tps':
+                theta = np.expand_dims(np.expand_dims(theta,1),2)
+        else:
+            if self.geometric_model=='affine':
+                alpha = (np.random.rand(1)-0.5)*2*np.pi*self.random_alpha
+                theta = np.random.rand(6)
+                theta[[2,5]]=(theta[[2,5]]-0.5)*2*self.random_t
+                theta[0]=(1+(theta[0]-0.5)*2*self.random_s)*np.cos(alpha)
+                theta[1]=(1+(theta[1]-0.5)*2*self.random_s)*(-np.sin(alpha))
+                theta[3]=(1+(theta[3]-0.5)*2*self.random_s)*np.sin(alpha)
+                theta[4]=(1+(theta[4]-0.5)*2*self.random_s)*np.cos(alpha)
+                theta = theta.reshape(2,3)
+            if self.geometric_model=='tps':
+                theta = np.array([-1 , -1 , -1 , 0 , 0 , 0 , 1 , 1 , 1 , -1 , 0 , 1 , -1 , 0 , 1 , -1 , 0 , 1])
+                theta = theta+(np.random.rand(18)-0.5)*2*self.random_t_tps               
         
         # make arrays float tensor for subsequent processing
         image = torch.Tensor(image.astype(np.float32))

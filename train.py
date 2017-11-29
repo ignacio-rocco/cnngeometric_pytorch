@@ -42,6 +42,9 @@ parser.add_argument('--seed', type=int, default=1, help='Pseudo-RNG seed')
 # Model parameters
 parser.add_argument('--geometric-model', type=str, default='affine', help='geometric model to be regressed at output: affine or tps')
 parser.add_argument('--use-mse-loss', type=str_to_bool, nargs='?', const=True, default=False, help='Use MSE loss on tnf. parameters')
+parser.add_argument('--feature-extraction-cnn', type=str, default='vgg', help='Feature extraction architecture: vgg/resnet101')
+# Synthetic dataset parameters
+parser.add_argument('--random-sample', type=str_to_bool, nargs='?', const=True, default=False, help='sample random transformations')
 
 args = parser.parse_args()
 
@@ -65,7 +68,7 @@ if args.training_dataset == 'pascal':
 # CNN model and loss
 print('Creating CNN model...')
 
-model = CNNGeometric(use_cuda=use_cuda,geometric_model=args.geometric_model)
+model = CNNGeometric(use_cuda=use_cuda,geometric_model=args.geometric_model,feature_extraction_cnn=args.feature_extraction_cnn)
 
 if args.use_mse_loss:
     print('Using MSE loss...')
@@ -79,7 +82,8 @@ else:
 dataset = SynthDataset(geometric_model=args.geometric_model,
                        csv_file=os.path.join(args.training_tnf_csv,'train.csv'),
                        training_image_path=args.training_image_path,
-                       transform=NormalizeImageDict(['image']))
+                       transform=NormalizeImageDict(['image']),
+                       random_sample=args.random_sample)
 
 dataloader = DataLoader(dataset, batch_size=args.batch_size,
                         shuffle=True, num_workers=4)
@@ -87,7 +91,8 @@ dataloader = DataLoader(dataset, batch_size=args.batch_size,
 dataset_test = SynthDataset(geometric_model=args.geometric_model,
                             csv_file=os.path.join(args.training_tnf_csv,'test.csv'),
                             training_image_path=args.training_image_path,
-                            transform=NormalizeImageDict(['image']))
+                            transform=NormalizeImageDict(['image']),
+                            random_sample=args.random_sample)
 
 dataloader_test = DataLoader(dataset_test, batch_size=args.batch_size,
                         shuffle=True, num_workers=4)
@@ -101,10 +106,10 @@ optimizer = optim.Adam(model.FeatureRegression.parameters(), lr=args.lr)
 # Train
 if args.use_mse_loss:
     checkpoint_name = os.path.join(args.trained_models_dir,
-                                   args.trained_models_fn + '_' + args.geometric_model + '_mse_loss.pth.tar')
+                                   args.trained_models_fn + '_' + args.geometric_model + '_mse_loss' + args.feature_extraction_cnn + '.pth.tar')
 else:
     checkpoint_name = os.path.join(args.trained_models_dir,
-                                   args.trained_models_fn + '_' + args.geometric_model + '_grid_loss.pth.tar')
+                                   args.trained_models_fn + '_' + args.geometric_model + '_grid_loss' + args.feature_extraction_cnn + '.pth.tar')
     
 best_test_loss = float("inf")
 

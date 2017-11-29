@@ -13,8 +13,8 @@ from geotnf.transformation import GeometricTnf
 from geotnf.point_tnf import *
 import matplotlib.pyplot as plt
 from skimage import io
-import warnings
-warnings.filterwarnings('ignore')
+from collections import OrderedDict
+
 
 # for compatibility with Python 2
 try:
@@ -34,8 +34,9 @@ print('CNNGeometric PF demo script')
 # Argument parsing
 parser = argparse.ArgumentParser(description='CNNGeometric PyTorch implementation')
 # Paths
-parser.add_argument('--model-aff', type=str, default='trained_models/best_pascal_checkpoint_adam_affine_grid_loss.pth.tar', help='Trained affine model filename')
-parser.add_argument('--model-tps', type=str, default='trained_models/best_pascal_checkpoint_adam_tps_grid_loss.pth.tar', help='Trained TPS model filename')
+parser.add_argument('--model-aff', type=str, default='trained_models/best_pascal_checkpoint_adam_affine_grid_loss_resnet_random.pth.tar', help='Trained affine model filename')
+parser.add_argument('--model-tps', type=str, default='trained_models/best_pascal_checkpoint_adam_tps_grid_loss_resnet_random.pth.tar', help='Trained TPS model filename')
+parser.add_argument('--feature-extraction-cnn', type=str, default='resnet101', help='Feature extraction architecture: vgg/resnet101')
 parser.add_argument('--pf-path', type=str, default='datasets/PF-dataset', help='Path to PF dataset')
 
 args = parser.parse_args()
@@ -52,17 +53,19 @@ download_PF_willow('datasets/')
 # Create model
 print('Creating CNN model...')
 if do_aff:
-    model_aff = CNNGeometric(use_cuda=use_cuda,geometric_model='affine')
+    model_aff = CNNGeometric(use_cuda=use_cuda,geometric_model='affine',feature_extraction_cnn=args.feature_extraction_cnn)
 if do_tps:
-    model_tps = CNNGeometric(use_cuda=use_cuda,geometric_model='tps')
+    model_tps = CNNGeometric(use_cuda=use_cuda,geometric_model='tps',feature_extraction_cnn=args.feature_extraction_cnn)
 
 # Load trained weights
 print('Loading trained model weights...')
 if do_aff:
     checkpoint = torch.load(args.model_aff, map_location=lambda storage, loc: storage)
+    checkpoint['state_dict'] = OrderedDict([(k.replace('vgg', 'model'), v) for k, v in checkpoint['state_dict'].items()])
     model_aff.load_state_dict(checkpoint['state_dict'])
 if do_tps:
     checkpoint = torch.load(args.model_tps, map_location=lambda storage, loc: storage)
+    checkpoint['state_dict'] = OrderedDict([(k.replace('vgg', 'model'), v) for k, v in checkpoint['state_dict'].items()])
     model_tps.load_state_dict(checkpoint['state_dict'])
 
 # Dataset and dataloader
