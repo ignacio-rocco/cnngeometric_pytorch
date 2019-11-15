@@ -10,3 +10,4 @@ results/
 trained_models/
 **/*.bak
 *.png
+.idea

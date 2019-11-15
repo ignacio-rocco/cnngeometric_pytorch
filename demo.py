@@ -1,14 +1,12 @@
 from __future__ import print_function, division
 import os
 import argparse
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from model.cnn_geometric_model import CNNGeometric
 from data.pf_dataset import PFDataset
 from data.download_datasets import download_PF_willow
 from image.normalization import NormalizeImageDict, normalize_image
-from util.torch_util import BatchTensorToVars, str_to_bool
+from util.torch_util import BatchTensorToVars
 from geotnf.transformation import GeometricTnf
 from geotnf.point_tnf import *
 import matplotlib.pyplot as plt

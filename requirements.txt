@@ -1,0 +1,7 @@
+pandas
+torch
+torchvision
+sklearn
+scikit-image
+matplotlib
+requests
