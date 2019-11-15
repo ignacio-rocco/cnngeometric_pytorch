@@ -1,11 +1,11 @@
 from __future__ import print_function, division
 import argparse
 import os
-from os.path import exists, join, basename
+from glob import glob
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from model.cnn_geometric_model import CNNGeometric
 from model.loss import TransformedGridLoss
 from data.synth_dataset import SynthDataset
@@ -100,10 +100,11 @@ def main():
         loss = TransformedGridLoss(use_cuda=use_cuda,
                                    geometric_model=args.geometric_model)
 
+    train_csv_path = glob(os.path.join(args.training_tnf_csv, '*train.csv'))
+
     # Dataset and dataloader
     dataset = SynthDataset(geometric_model=args.geometric_model,
-                           csv_file=os.path.join(args.training_tnf_csv,
-                                                 'train.csv'),
+                           csv_file=train_csv_path,
                            training_image_path=args.training_image_path,
                            transform=NormalizeImageDict(['image']),
                            random_sample=args.random_sample)
@@ -111,14 +112,15 @@ def main():
     dataloader = DataLoader(dataset, batch_size=args.batch_size,
                             shuffle=True, num_workers=4)
 
-    dataset_test = SynthDataset(geometric_model=args.geometric_model,
-                                csv_file=os.path.join(args.training_tnf_csv,
-                                                      'test.csv'),
-                                training_image_path=args.training_image_path,
-                                transform=NormalizeImageDict(['image']),
-                                random_sample=args.random_sample)
+    val_csv_path = glob(os.path.join(args.training_tnf_csv, '*val.csv'))
 
-    dataloader_test = DataLoader(dataset_test, batch_size=args.batch_size,
+    dataset_val = SynthDataset(geometric_model=args.geometric_model,
+                               csv_file=val_csv_path,
+                               training_image_path=args.training_image_path,
+                               transform=NormalizeImageDict(['image']),
+                               random_sample=args.random_sample)
+
+    dataloader_test = DataLoader(dataset_val, batch_size=args.batch_size,
                                  shuffle=True, num_workers=4)
 
     pair_generation_tnf = SynthPairTnf(geometric_model=args.geometric_model,
