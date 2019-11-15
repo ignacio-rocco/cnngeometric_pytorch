@@ -41,7 +41,7 @@ class GeometricTnf(object):
         # rescale grid according to crop_factor and padding_factor
         sampling_grid.data = sampling_grid.data*padding_factor*crop_factor
         # sample transformed image
-        warped_image_batch = F.grid_sample(image_batch, sampling_grid)
+        warped_image_batch = F.grid_sample(image_batch, sampling_grid, align_corners=True)
         
         return warped_image_batch
     
@@ -120,7 +120,7 @@ class AffineGridGen(Module):
         theta = theta.contiguous()
         batch_size = theta.size()[0]
         out_size = torch.Size((batch_size,self.out_ch,self.out_h,self.out_w))
-        return F.affine_grid(theta, out_size)
+        return F.affine_grid(theta, out_size, align_corners=True)
         
 class TpsGridGen(Module):
     def __init__(self, out_h=240, out_w=240, use_regular_grid=True, grid_size=3, reg_factor=0, use_cuda=True):
