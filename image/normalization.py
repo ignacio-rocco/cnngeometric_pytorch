@@ -13,24 +13,27 @@ class NormalizeImageDict(object):
         normalizeRange (bool): if True the image is divided by 255.0s
     
     """
-    
+
     def __init__(self, image_keys, normalizeRange=True):
         self.image_keys = image_keys
         self.normalizeRange = normalizeRange
         self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                               std=[0.229, 0.224, 0.225])
-        
+
     def __call__(self, sample):
         for key in self.image_keys:
             if self.normalizeRange:
                 sample[key] /= 255.0                
             sample[key] = self.normalize(sample[key])
         return sample
-    
+
     
 def normalize_image(image, forward=True,
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225]):
+                    mean=(0.485, 0.456, 0.406),
+                    std=(0.229, 0.224, 0.225)):
+
+        mean = list(mean)
+        std = list(std)
 
         im_size = image.size()
         mean = torch.FloatTensor(mean).unsqueeze(1).unsqueeze(2)

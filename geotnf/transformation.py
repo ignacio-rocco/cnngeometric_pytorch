@@ -47,7 +47,8 @@ class GeometricTnf(object):
         # rescale grid according to crop_factor and padding_factor
         sampling_grid.data = sampling_grid.data * padding_factor * crop_factor
         # sample transformed image
-        warped_image_batch = F.grid_sample(image_batch, sampling_grid, align_corners=True)
+        warped_image_batch = F.grid_sample(image_batch, sampling_grid,
+                                           align_corners=True)
 
         return warped_image_batch
 
