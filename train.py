@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from model.cnn_geometric_model import CNNGeometric
 from model.loss import TransformedGridLoss
 from data.synth_dataset import SynthDataset
+from data.coupled_dataset import CoupledDataset
 from data.download_datasets import download_pascal
 from geotnf.transformation import SynthPairTnf
 from image.normalization import NormalizeImageDict
@@ -54,6 +55,8 @@ def parse_flags():
     # Synthetic dataset parameters
     parser.add_argument('--random-sample', type=str_to_bool, nargs='?', const=True, default=False,
                         help='sample random transformations')
+    parser.add_argument('--coupled_dataset', type=str_to_bool, nargs='?', const=True, default=False,
+                        help='Whether csv dataset contains already pair of images')
 
     return parser.parse_args()
 
@@ -100,25 +103,50 @@ def main():
         loss = TransformedGridLoss(use_cuda=use_cuda,
                                    geometric_model=args.geometric_model)
 
-    train_csv_path = glob(os.path.join(args.training_tnf_csv, '*train.csv'))
+    # Initialize csv paths
+    train_csv_path_list = glob(os.path.join(args.training_tnf_csv, '*train.csv'))
+    if len(train_csv_path_list) > 1:
+        print("!!!!WARNING!!!! multiple train csv files found, using first in glob order")
 
-    # Dataset and dataloader
-    dataset = SynthDataset(geometric_model=args.geometric_model,
-                           csv_file=train_csv_path,
-                           training_image_path=args.training_image_path,
-                           transform=NormalizeImageDict(['image']),
-                           random_sample=args.random_sample)
+    train_csv_path = train_csv_path_list[0]
 
-    dataloader = DataLoader(dataset, batch_size=args.batch_size,
-                            shuffle=True, num_workers=4)
+    val_csv_path_list = glob(os.path.join(args.training_tnf_csv, '*val.csv'))
+    if len(val_csv_path_list) > 1:
+        print("!!!!WARNING!!!! multiple train csv files found, using first in glob order")
 
-    val_csv_path = glob(os.path.join(args.training_tnf_csv, '*val.csv'))
+    val_csv_path = val_csv_path_list[0]
 
-    dataset_val = SynthDataset(geometric_model=args.geometric_model,
-                               csv_file=val_csv_path,
+    if args.coupled_dataset:
+        # Dataset  for train and val if dataset is already coupled
+        dataset = CoupledDataset(geometric_model=args.geometric_model,
+                                 csv_file=train_csv_path,
+                                 training_image_path=args.training_image_path,
+                                 transform=NormalizeImageDict(['image']),
+                                 random_sample=args.random_sample)
+
+        dataset_val = CoupledDataset(geometric_model=args.geometric_model,
+                                     csv_file=val_csv_path,
+                                     training_image_path=args.training_image_path,
+                                     transform=NormalizeImageDict(['image']),
+                                     random_sample=args.random_sample)
+
+    else:
+        # Standard Dataset for train and val
+        dataset = SynthDataset(geometric_model=args.geometric_model,
+                               csv_file=train_csv_path,
                                training_image_path=args.training_image_path,
                                transform=NormalizeImageDict(['image']),
                                random_sample=args.random_sample)
+
+        dataset_val = SynthDataset(geometric_model=args.geometric_model,
+                                   csv_file=val_csv_path,
+                                   training_image_path=args.training_image_path,
+                                   transform=NormalizeImageDict(['image']),
+                                   random_sample=args.random_sample)
+
+    # Initialize DataLoaders
+    dataloader = DataLoader(dataset, batch_size=args.batch_size,
+                            shuffle=True, num_workers=4)
 
     dataloader_test = DataLoader(dataset_val, batch_size=args.batch_size,
                                  shuffle=True, num_workers=4)
