@@ -46,10 +46,15 @@ def normalize_image(image, forward=True,
                 result = image.sub(mean.expand(im_size)).div(std.expand(im_size))
             elif len(im_size) == 4:
                 result = image.sub(mean.unsqueeze(0).expand(im_size)).div(std.unsqueeze(0).expand(im_size))
+            else:
+                raise TypeError("Couldn't read image due to an unexpected format")
+
         else:
             if len(im_size) == 3:
                 result = image.mul(std.expand(im_size)).add(mean.expand(im_size))
             elif len(im_size) == 4:
                 result = image.mul(std.unsqueeze(0).expand(im_size)).add(mean.unsqueeze(0).expand(im_size))
-                
+            else:
+                raise TypeError("Couldn't read image due to an unexpected format")
+
         return result
