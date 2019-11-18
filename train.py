@@ -40,12 +40,18 @@ def parse_flags():
     parser.add_argument('--trained-models-fn', type=str, default='checkpoint_adam',
                         help='trained model filename')
     # Optimization parameters
-    parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
-    parser.add_argument('--momentum', type=float, default=0.9, help='momentum constant')
-    parser.add_argument('--num-epochs', type=int, default=10, help='number of training epochs')
-    parser.add_argument('--batch-size', type=int, default=16, help='training batch size')
-    parser.add_argument('--weight-decay', type=float, default=0, help='weight decay constant')
-    parser.add_argument('--seed', type=int, default=1, help='Pseudo-RNG seed')
+    parser.add_argument('--lr', type=float, default=0.001,
+                        help='learning rate')
+    parser.add_argument('--momentum', type=float, default=0.9,
+                        help='momentum constant')
+    parser.add_argument('--num-epochs', type=int, default=10,
+                        help='number of training epochs')
+    parser.add_argument('--batch-size', type=int, default=16,
+                        help='training batch size')
+    parser.add_argument('--weight-decay', type=float, default=0,
+                        help='weight decay constant')
+    parser.add_argument('--seed', type=int, default=1,
+                        help='Pseudo-RNG seed')
     # Model parameters
     parser.add_argument('--geometric-model', type=str, default='affine',
                         help='geometric model to be regressed at output: affine or tps')
@@ -58,6 +64,8 @@ def parse_flags():
                         help='sample random transformations')
     parser.add_argument('--coupled_dataset', type=str_to_bool, nargs='?', const=True, default=False,
                         help='Whether csv dataset contains already pair of images')
+    parser.add_argument('--log_interval', type=int, default=100,
+                        help='Number of iterations between logs')
 
     return parser.parse_args()
 
@@ -180,7 +188,7 @@ def main():
 
         train_loss = train(epoch, model, loss, optimizer,
                            dataloader, pair_generation_tnf,
-                           log_interval=100)
+                           log_interval=args.log_interval)
 
         test_loss = test(model, loss,
                          dataloader_test, pair_generation_tnf)
