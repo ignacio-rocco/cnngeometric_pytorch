@@ -1,7 +1,8 @@
 from __future__ import print_function, division
 import torch
 import os
-from skimage import io
+import ast
+from copy import deepcopy
 import cv2
 import pandas as pd
 import numpy as np
@@ -59,8 +60,9 @@ class CoupledDataset(Dataset):
         # read image
         img_name_a = os.path.join(self.training_image_path, self.img_a_names[idx])
         img_name_b = os.path.join(self.training_image_path, self.img_b_names[idx])
-        image_a = io.imread(img_name_a)
-        image_b = io.imread(img_name_b)
+        image_a = cv2.imread(img_name_a, cv2.IMREAD_COLOR)  # io.imread(img_name_a)
+        image_b = cv2.imread(img_name_b, cv2.IMREAD_COLOR)  # io.imread(img_name_b)
+        vertices = ast.literal_eval(self.img_a_vertices[idx])
 
         # read theta
         if not self.random_sample:
@@ -95,7 +97,7 @@ class CoupledDataset(Dataset):
 
         # hold in the image_a only the crop but maintaining resolution
         # we achieve this by blanking each pixel outside the vertices
-        image_a = blank_outside_verts(image_a, self.img_a_vertices)
+        image_a = blank_outside_verts(image_a, vertices)
 
         # make arrays float tensor for subsequent processing
         image_a = torch.Tensor(image_a.astype(np.float32))
@@ -126,7 +128,7 @@ class CoupledDataset(Dataset):
         return sample
 
 
-def blank_outside_verts(image, element_vertices):
+def blank_outside_verts(src_image, element_vertices):
     """
     This method takes annotated vertices of an image and sets to 255
     the pixels outside vertices + margin
@@ -136,7 +138,11 @@ def blank_outside_verts(image, element_vertices):
     :return: blanked_image: np_array
     """
 
+    image = deepcopy(src_image)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
     # TODO add a little margin of pixels ?
+    image = np.array(image, np.uint8)
     element_vertices = np.array(element_vertices)
 
     # make mask leaving zero the outside of the vertices
@@ -151,4 +157,4 @@ def blank_outside_verts(image, element_vertices):
     # so summing, each part remained black outside the crop, goes white
     dst = tmp_dst + ~mask
 
-    return dst
+    return cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
