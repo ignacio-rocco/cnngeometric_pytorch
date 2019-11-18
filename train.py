@@ -132,8 +132,7 @@ def main():
                                      random_sample=args.random_sample)
 
         # Set Tnf pair generation func
-        pair_generation_tnf = CoupledPairTnf(geometric_model=args.geometric_model,
-                                             use_cuda=use_cuda)
+        pair_generation_tnf = CoupledPairTnf(use_cuda=use_cuda)
 
     else:
         # Standard Dataset for train and val
