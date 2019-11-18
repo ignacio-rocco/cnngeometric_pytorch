@@ -1,3 +1,4 @@
+tqdm
 cv2
 numpy
 pandas

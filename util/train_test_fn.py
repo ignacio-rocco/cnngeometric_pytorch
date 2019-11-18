@@ -1,4 +1,5 @@
 from __future__ import print_function, division
+from tqdm import tqdm
 
 
 def train(epoch, model, loss_fn, optimizer,
@@ -7,7 +8,7 @@ def train(epoch, model, loss_fn, optimizer,
 
     model.train()
     train_loss = 0
-    for batch_idx, batch in enumerate(dataloader):
+    for batch_idx, batch in enumerate(tqdm(dataloader, desc='Epoch {}'.format(epoch))):
         optimizer.zero_grad()
         tnf_batch = pair_generation_tnf(batch)
         theta = model(tnf_batch)
@@ -16,9 +17,7 @@ def train(epoch, model, loss_fn, optimizer,
         optimizer.step()
         train_loss += loss.data.cpu().numpy().item()
         if batch_idx % log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\t\tLoss: {:.6f}'.format(
-                epoch, batch_idx, len(dataloader),
-                100. * batch_idx / len(dataloader), loss.data.item()))
+            print('\tLoss: {:.6f}'.format(loss.data.item()))
     train_loss /= len(dataloader)
     print('Train set: Average loss: {:.4f}'.format(train_loss))
     return train_loss
