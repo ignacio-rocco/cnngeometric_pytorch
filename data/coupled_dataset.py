@@ -2,6 +2,7 @@ from __future__ import print_function, division
 import torch
 import os
 from skimage import io
+import cv2
 import pandas as pd
 import numpy as np
 from torch.utils.data import Dataset
@@ -92,6 +93,10 @@ class CoupledDataset(Dataset):
 
                 theta = theta + (np.random.rand(18) - 0.5) * 2 * self.random_t_tps
 
+        # hold in the image_a only the crop but maintaining resolution
+        # we achieve this by blanking each pixel outside the vertices
+        image_a = blank_outside_verts(image_a, self.img_a_vertices)
+
         # make arrays float tensor for subsequent processing
         image_a = torch.Tensor(image_a.astype(np.float32))
         image_b = torch.Tensor(image_b.astype(np.float32))
@@ -100,8 +105,6 @@ class CoupledDataset(Dataset):
         # permute order of image to CHW
         image_a = image_a.transpose(1, 2).transpose(0, 1)
         image_b = image_b.transpose(1, 2).transpose(0, 1)
-
-        # TODO crop image_a over vertices?
 
         # Resize image using bilinear sampling with identity affine tnf
         if image_a.size()[0] != self.out_h or image_a.size()[1] != self.out_w:
@@ -121,3 +124,31 @@ class CoupledDataset(Dataset):
             sample = self.transform(sample)
 
         return sample
+
+
+def blank_outside_verts(image, element_vertices):
+    """
+    This method takes annotated vertices of an image and sets to 255
+    the pixels outside vertices + margin
+
+    :param image: np_array
+    :param element_vertices: list of tuples of vertices
+    :return: blanked_image: np_array
+    """
+
+    # TODO add a little margin of pixels ?
+    element_vertices = np.array(element_vertices)
+
+    # make mask leaving zero the outside of the vertices
+    mask = np.zeros(image.shape[:2], np.uint8)
+    cv2.drawContours(mask, [element_vertices], -1, (255, 255, 255), -1, cv2.LINE_AA)
+
+    # the filtered starting image is simply the and operator on each pixel
+    # the background remains black though
+    tmp_dst = cv2.bitwise_and(mask, image)
+
+    # the tilde operator makes the bitwise not of the image
+    # so summing, each part remained black outside the crop, goes white
+    dst = tmp_dst + ~mask
+
+    return dst
