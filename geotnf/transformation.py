@@ -130,6 +130,8 @@ class CoupledPairTnf(object):
         self.use_cuda = use_cuda
         self.padding_factor = padding_factor
         self.out_h, self.out_w = output_size
+        self.rescalingTnf = GeometricTnf('affine', self.out_h, self.out_w,
+                                         use_cuda=self.use_cuda)
 
     def __call__(self, batch):
         img_a_batch, img_b_batch, theta_batch = batch['image_a'], batch['image_b'], batch['theta']
@@ -147,7 +149,13 @@ class CoupledPairTnf(object):
         img_b_batch = Variable(img_b_batch, requires_grad=False)
         theta_batch = Variable(theta_batch, requires_grad=False)
 
-        return {'source_image': img_a_batch, 'target_image': img_b_batch, 'theta_GT': theta_batch}
+        res_img_a_batch = self.rescalingTnf(img_a_batch, None,
+                                            self.padding_factor)
+        res_img_b_batch = self.rescalingTnf(img_b_batch, None,
+                                            self.padding_factor)
+
+        return {'source_image': res_img_a_batch, 'target_image': res_img_b_batch,
+                'theta_GT': theta_batch}
 
     def symmetricImagePad(self, image_batch, padding_factor):
         b, c, h, w = image_batch.size()
