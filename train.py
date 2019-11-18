@@ -29,38 +29,38 @@ def parse_flags():
     # Argument parsing
     parser = argparse.ArgumentParser(description='CNNGeometric PyTorch implementation')
     # Paths
-    parser.add_argument('--training-dataset', type=str, default='pascal',
+    parser.add_argument('--training_dataset', type=str, default='pascal',
                         help='dataset to use for training')
-    parser.add_argument('--training-tnf-csv', type=str, default='',
+    parser.add_argument('--training_tnf_csv', type=str, default='',
                         help='path to training transformation csv folder')
-    parser.add_argument('--training-image-path', type=str, default='',
+    parser.add_argument('--training_image_path', type=str, default='',
                         help='path to folder containing training images')
-    parser.add_argument('--trained-models-dir', type=str, default='trained_models',
+    parser.add_argument('--trained_models_dir', type=str, default='trained_models',
                         help='path to trained models folder')
-    parser.add_argument('--trained-models-fn', type=str, default='checkpoint_adam',
+    parser.add_argument('--trained_models_fn', type=str, default='checkpoint_adam',
                         help='trained model filename')
     # Optimization parameters
     parser.add_argument('--lr', type=float, default=0.001,
                         help='learning rate')
     parser.add_argument('--momentum', type=float, default=0.9,
                         help='momentum constant')
-    parser.add_argument('--num-epochs', type=int, default=10,
+    parser.add_argument('--num_epochs', type=int, default=10,
                         help='number of training epochs')
-    parser.add_argument('--batch-size', type=int, default=16,
+    parser.add_argument('--batch_size', type=int, default=16,
                         help='training batch size')
-    parser.add_argument('--weight-decay', type=float, default=0,
+    parser.add_argument('--weight_decay', type=float, default=0,
                         help='weight decay constant')
     parser.add_argument('--seed', type=int, default=1,
                         help='Pseudo-RNG seed')
     # Model parameters
-    parser.add_argument('--geometric-model', type=str, default='affine',
+    parser.add_argument('--geometric_model', type=str, default='affine',
                         help='geometric model to be regressed at output: affine or tps')
-    parser.add_argument('--use-mse-loss', type=str_to_bool, nargs='?', const=True, default=False,
+    parser.add_argument('--use_mse_loss', type=str_to_bool, nargs='?', const=True, default=False,
                         help='Use MSE loss on tnf. parameters')
-    parser.add_argument('--feature-extraction-cnn', type=str, default='vgg',
+    parser.add_argument('--feature_extraction_cnn', type=str, default='vgg',
                         help='Feature extraction architecture: vgg/resnet101')
     # Synthetic dataset parameters
-    parser.add_argument('--random-sample', type=str_to_bool, nargs='?', const=True, default=False,
+    parser.add_argument('--random_sample', type=str_to_bool, nargs='?', const=True, default=False,
                         help='sample random transformations')
     parser.add_argument('--coupled_dataset', type=str_to_bool, nargs='?', const=True, default=False,
                         help='Whether csv dataset contains already pair of images')
@@ -179,6 +179,8 @@ def main():
         ckpt = args.trained_models_fn + '_' + args.geometric_model + '_grid_loss' + args.feature_extraction_cnn
         checkpoint_path = os.path.join(args.trained_models_dir,
                                        ckpt + '.pth.tar')
+    if not os.path.exists(args.trained_models_dir):
+        os.mkdir(args.trained_models_dir)
 
     best_test_loss = float("inf")
 
