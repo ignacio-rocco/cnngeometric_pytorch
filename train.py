@@ -121,13 +121,13 @@ def main():
         dataset = CoupledDataset(geometric_model=args.geometric_model,
                                  csv_file=train_csv_path,
                                  training_image_path=args.training_image_path,
-                                 transform=NormalizeImageDict(['image']),
+                                 transform=NormalizeImageDict(['image_a', 'image_b']),
                                  random_sample=args.random_sample)
 
         dataset_val = CoupledDataset(geometric_model=args.geometric_model,
                                      csv_file=val_csv_path,
                                      training_image_path=args.training_image_path,
-                                     transform=NormalizeImageDict(['image']),
+                                     transform=NormalizeImageDict(['image_a', 'image_b']),
                                      random_sample=args.random_sample)
 
     else:
