@@ -12,6 +12,7 @@ from data.synth_dataset import SynthDataset
 from data.coupled_dataset import CoupledDataset
 from data.download_datasets import download_pascal
 from geotnf.transformation import SynthPairTnf
+from geotnf.transformation import CoupledPairTnf
 from image.normalization import NormalizeImageDict
 from util.train_test_fn import train, test
 from util.torch_util import save_checkpoint, str_to_bool
@@ -130,6 +131,10 @@ def main():
                                      transform=NormalizeImageDict(['image_a', 'image_b']),
                                      random_sample=args.random_sample)
 
+        # Set Tnf pair generation func
+        pair_generation_tnf = CoupledPairTnf(geometric_model=args.geometric_model,
+                                             use_cuda=use_cuda)
+
     else:
         # Standard Dataset for train and val
         dataset = SynthDataset(geometric_model=args.geometric_model,
@@ -144,15 +149,16 @@ def main():
                                    transform=NormalizeImageDict(['image']),
                                    random_sample=args.random_sample)
 
+        # Set Tnf pair generation func
+        pair_generation_tnf = SynthPairTnf(geometric_model=args.geometric_model,
+                                           use_cuda=use_cuda)
+
     # Initialize DataLoaders
     dataloader = DataLoader(dataset, batch_size=args.batch_size,
                             shuffle=True, num_workers=4)
 
     dataloader_test = DataLoader(dataset_val, batch_size=args.batch_size,
                                  shuffle=True, num_workers=4)
-
-    pair_generation_tnf = SynthPairTnf(geometric_model=args.geometric_model,
-                                       use_cuda=use_cuda)
 
     # Optimizer
     optimizer = optim.Adam(model.FeatureRegression.parameters(), lr=args.lr)
