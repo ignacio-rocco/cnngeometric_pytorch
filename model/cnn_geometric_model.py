@@ -51,7 +51,7 @@ class FeatureExtraction(torch.nn.Module):
         # move to GPU
         if use_cuda:
             self.model.cuda()
-        
+
     def forward(self, image_batch):
         return self.model(image_batch)
 
@@ -62,8 +62,6 @@ class FeatureL2Norm(torch.nn.Module):
 
     def forward(self, feature):
         epsilon = 1e-6
-#        print(feature.size())
-#        print(torch.pow(torch.sum(torch.pow(feature, 2), 1)+epsilon,0.5).size())
         norm = torch.pow(torch.sum(torch.pow(feature, 2),
                                    1)+epsilon,
                          0.5).unsqueeze(1).expand_as(feature)
@@ -83,7 +81,7 @@ class FeatureCorrelation(torch.nn.Module):
         feature_A = feature_A.transpose(2, 3).contiguous().view(b, c, h*w)
         feature_B = feature_B.view(b, c, h*w).transpose(1, 2)
 
-        # perform matrix mult.
+        # perform matrix multiplication
         feature_mul = torch.bmm(feature_B, feature_A)
         correlation_tensor = feature_mul.view(b, h,
                                               w, h*w).transpose(2, 3).transpose(1, 2)
@@ -153,7 +151,7 @@ class CNNGeometric(nn.Module):
         # normalize
         if self.normalize_matches:
             correlation = self.FeatureL2Norm(self.ReLU(correlation))
-#        correlation = self.FeatureL2Norm(correlation)
+
         # do regression to tnf parameters theta
         theta = self.FeatureRegression(correlation)
 
