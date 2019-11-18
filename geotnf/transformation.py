@@ -1,12 +1,7 @@
 from __future__ import print_function, division
-import os
-import sys
-from skimage import io
-import pandas as pd
 import numpy as np
 import torch
 from torch.nn.modules.module import Module
-from torch.utils.data import Dataset
 from torch.autograd import Variable
 import torch.nn.functional as F
 
@@ -60,7 +55,7 @@ class SynthPairTnf(object):
     
     """
 
-    def __init__(self, use_cuda=True, geometric_model='affine', crop_factor=9 / 16, output_size=(240, 240),
+    def __init__(self, use_cuda=True, geometric_model='affine', crop_factor=9/16, output_size=(240, 240),
                  padding_factor=0.5):
         assert isinstance(use_cuda, bool)
         assert isinstance(crop_factor, float)
@@ -100,6 +95,59 @@ class SynthPairTnf(object):
                                                self.crop_factor)  # Identity is used as no theta given
 
         return {'source_image': cropped_image_batch, 'target_image': warped_image_batch, 'theta_GT': theta_batch}
+
+    def symmetricImagePad(self, image_batch, padding_factor):
+        b, c, h, w = image_batch.size()
+        pad_h, pad_w = int(h * padding_factor), int(w * padding_factor)
+        idx_pad_left = torch.LongTensor(range(pad_w - 1, -1, -1))
+        idx_pad_right = torch.LongTensor(range(w - 1, w - pad_w - 1, -1))
+        idx_pad_top = torch.LongTensor(range(pad_h - 1, -1, -1))
+        idx_pad_bottom = torch.LongTensor(range(h - 1, h - pad_h - 1, -1))
+        if self.use_cuda:
+            idx_pad_left = idx_pad_left.cuda()
+            idx_pad_right = idx_pad_right.cuda()
+            idx_pad_top = idx_pad_top.cuda()
+            idx_pad_bottom = idx_pad_bottom.cuda()
+        image_batch = torch.cat((image_batch.index_select(3, idx_pad_left), image_batch,
+                                 image_batch.index_select(3, idx_pad_right)), 3)
+        image_batch = torch.cat((image_batch.index_select(2, idx_pad_top), image_batch,
+                                 image_batch.index_select(2, idx_pad_bottom)), 2)
+        return image_batch
+
+
+class CoupledPairTnf(object):
+    """
+
+    Serve to the model the pair of images defined in coupled_dataset
+
+    """
+
+    def __init__(self, use_cuda=True, output_size=(240, 240),
+                 padding_factor=0.5):
+        assert isinstance(use_cuda, bool)
+        assert isinstance(output_size, tuple)
+        assert isinstance(padding_factor, float)
+        self.use_cuda = use_cuda
+        self.padding_factor = padding_factor
+        self.out_h, self.out_w = output_size
+
+    def __call__(self, batch):
+        img_a_batch, img_b_batch, theta_batch = batch['image_a'], batch['image_b'], batch['theta']
+        if self.use_cuda:
+            img_a_batch = img_a_batch.cuda()
+            img_b_batch = img_b_batch.cuda()
+            theta_batch = theta_batch.cuda()
+
+        # generate symmetrically padded image for bigger sampling region
+        img_a_batch = self.symmetricImagePad(img_a_batch, self.padding_factor)
+        img_b_batch = self.symmetricImagePad(img_b_batch, self.padding_factor)
+
+        # convert to variables
+        img_a_batch = Variable(img_a_batch, requires_grad=False)
+        img_b_batch = Variable(img_b_batch, requires_grad=False)
+        theta_batch = Variable(theta_batch, requires_grad=False)
+
+        return {'source_image': img_a_batch, 'target_image': img_b_batch, 'theta_GT': theta_batch}
 
     def symmetricImagePad(self, image_batch, padding_factor):
         b, c, h, w = image_batch.size()
