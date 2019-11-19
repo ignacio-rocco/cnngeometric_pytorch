@@ -143,11 +143,16 @@ def blank_outside_verts(src_image, element_vertices):
 
     # TODO add a little margin of pixels ?
     image = np.array(image, np.uint8)
-    element_vertices = np.array(element_vertices)
+    img_y, img_x = image.shape
+
+    # denormalize vertices
+
+    tmp_element_vertices = deepcopy(element_vertices)
+    vertices = np.array([[int(x * img_x), int(y * img_y)] for x, y in tmp_element_vertices])
 
     # make mask leaving zero the outside of the vertices
     mask = np.zeros(image.shape[:2], np.uint8)
-    cv2.drawContours(mask, [element_vertices], -1, (255, 255, 255), -1, cv2.LINE_AA)
+    cv2.drawContours(mask, [vertices], -1, (255, 255, 255), -1, cv2.LINE_AA)
 
     # the filtered starting image is simply the and operator on each pixel
     # the background remains black though
