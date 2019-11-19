@@ -66,6 +66,8 @@ def parse_flags():
                         help='Whether csv dataset contains already pair of images')
     parser.add_argument('--log_interval', type=int, default=100,
                         help='Number of iterations between logs')
+    parser.add_argument('--lr_scheduler', type=str_to_bool, nargs='?', const=True, default=True,
+                        help='Bool (default True), whether to use a decaying lr_scheduler')
 
     return parser.parse_args()
 
@@ -167,8 +169,16 @@ def main():
     dataloader_test = DataLoader(dataset_val, batch_size=args.batch_size,
                                  shuffle=True, num_workers=4)
 
-    # Optimizer
+    # Optimizer and eventual scheduler
     optimizer = optim.Adam(model.FeatureRegression.parameters(), lr=args.lr)
+
+    if args.lr_scheduler:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
+                                                               T_max=1000,
+                                                               eta_min=0.000001)
+        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
+    else:
+        scheduler = False
 
     # Train
     if args.use_mse_loss:
@@ -190,7 +200,8 @@ def main():
 
         train_loss = train(epoch, model, loss, optimizer,
                            dataloader, pair_generation_tnf,
-                           log_interval=args.log_interval)
+                           log_interval=args.log_interval,
+                           scheduler=scheduler)
 
         test_loss = test(model, loss,
                          dataloader_test, pair_generation_tnf)

@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 def train(epoch, model, loss_fn, optimizer,
           dataloader, pair_generation_tnf,
-          log_interval=50):
+          log_interval=50, scheduler=False):
 
     model.train()
     train_loss = 0
@@ -15,6 +15,10 @@ def train(epoch, model, loss_fn, optimizer,
         loss = loss_fn(theta, tnf_batch['theta_GT'])
         loss.backward()
         optimizer.step()
+
+        if scheduler:
+            scheduler.step()
+
         train_loss += loss.data.cpu().numpy().item()
         if batch_idx % log_interval == 0:
             print('\tLoss: {:.6f}'.format(loss.data.item()))
