@@ -222,8 +222,8 @@ def main():
 
     logs_writer = SummaryWriter(tb_dir)
     # add graph, to do so we have to generate a dummy input to pass along with the graph
-    dummy_input = {'source_image': torch.rand(args.batch_size, 3, 240, 240),
-                   'target_image': torch.rand(args.batch_size, 3, 240, 240),
+    dummy_input = {'source_image': torch.rand([args.batch_size, 3, 240, 240]),
+                   'target_image': torch.rand([args.batch_size, 3, 240, 240]),
                    'theta_GT': torch.rand([16, 2, 3])}
 
     logs_writer.add_graph(model, dummy_input)
