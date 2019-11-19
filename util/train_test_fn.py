@@ -1,4 +1,5 @@
 from __future__ import print_function, division
+import numpy as np
 from tqdm import tqdm
 
 
@@ -12,7 +13,12 @@ def train(epoch, model, loss_fn, optimizer,
         optimizer.zero_grad()
         tnf_batch = pair_generation_tnf(batch)
         theta = model(tnf_batch)
-        loss = loss_fn(theta, tnf_batch['theta_GT'])
+
+        if loss_fn._get_name() == 'MSELoss':
+            loss = loss_fn(theta, np.reshape(tnf_batch['theta_GT'], [16, 6]))
+        else:
+            loss = loss_fn(theta, tnf_batch['theta_GT'])
+
         loss.backward()
         optimizer.step()
 
