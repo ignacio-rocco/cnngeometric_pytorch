@@ -1,5 +1,5 @@
 tqdm
-cv2
+opencv-python
 numpy
 pandas
 torch
