@@ -64,8 +64,13 @@ def test(model, loss_fn,
     for batch_idx, batch in enumerate(dataloader):
         tnf_batch = pair_generation_tnf(batch)
         theta = model(tnf_batch)
-        loss = loss_fn(theta, tnf_batch['theta_GT'])
-        test_loss += loss.data.cpu().numpy()[0]
+
+        if loss_fn._get_name() == 'MSELoss':
+            loss = loss_fn(theta, np.reshape(tnf_batch['theta_GT'], [16, 6]))
+        else:
+            loss = loss_fn(theta, tnf_batch['theta_GT'])
+
+        test_loss += loss.data.cpu().numpy().item()
 
     test_loss /= len(dataloader)
     print('Test set: Average loss: {:.4f}'.format(test_loss))
