@@ -133,7 +133,7 @@ def blank_outside_verts(src_image, element_vertices):
     This method takes annotated vertices of an image and sets to 255
     the pixels outside vertices + margin
 
-    :param image: np_array
+    :param src_image: np_array
     :param element_vertices: list of tuples of vertices
     :return: blanked_image: np_array
     """
