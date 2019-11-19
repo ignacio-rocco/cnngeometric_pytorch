@@ -218,7 +218,7 @@ def main():
     if not args.log_dir:
         tb_dir = os.path.join(args.trained_models_dir, args.trained_models_fn + '_tb_logs')
     else:
-        tb_dir = args.log_dir
+        tb_dir = os.path.join(args.log_dir, args.trained_models_fn + '_tb_logs')
 
     logs_writer = SummaryWriter(tb_dir)
     # add graph, to do so we have to generate a dummy input to pass along with the graph
