@@ -2,18 +2,25 @@ from __future__ import print_function, division
 import argparse
 import os
 from glob import glob
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
+
 from model.cnn_geometric_model import CNNGeometric
 from model.loss import TransformedGridLoss
+
 from data.synth_dataset import SynthDataset
 from data.coupled_dataset import CoupledDataset
 from data.download_datasets import download_pascal
+
 from geotnf.transformation import SynthPairTnf
 from geotnf.transformation import CoupledPairTnf
+
 from image.normalization import NormalizeImageDict
+
 from util.train_test_fn import train, test
 from util.torch_util import save_checkpoint, str_to_bool
 
@@ -70,8 +77,12 @@ def parse_flags():
                         help='sample random transformations')
     parser.add_argument('--coupled_dataset', type=str_to_bool, nargs='?', const=True, default=False,
                         help='Whether csv dataset contains already pair of images')
+    # log parameters
     parser.add_argument('--log_interval', type=int, default=100,
                         help='Number of iterations between logs')
+    parser.add_argument('--log_dir', type=str, default='',
+                        help='If unspecified log_dir will be set to'
+                             '<trained_models_dir>/<trained_models_fn>/')
 
     return parser.parse_args()
 
@@ -190,6 +201,8 @@ def main():
         scheduler = False
 
     # Train
+
+    # Set up names for checkpoints
     if args.use_mse_loss:
         ckpt = args.trained_models_fn + '_' + args.geometric_model + '_mse_loss' + args.feature_extraction_cnn
         checkpoint_path = os.path.join(args.trained_models_dir,
@@ -201,19 +214,37 @@ def main():
     if not os.path.exists(args.trained_models_dir):
         os.mkdir(args.trained_models_dir)
 
-    best_test_loss = float("inf")
+    # Set up TensorBoard writer
+    if not args.log_dir:
+        tb_dir = os.path.join(args.trained_models_dir, args.trained_models_fn + '_tb_logs')
+    else:
+        tb_dir = args.log_dir
 
+    logs_writer = SummaryWriter(tb_dir)
+    # add graph, to do so we have to generate a dummy input to pass along with the graph
+    dummy_input = {'source_image': torch.rand(args.batch_size, 3, 240, 240),
+                   'target_image': torch.rand(args.batch_size, 3, 240, 240),
+                   'theta_GT': torch.rand([16, 2, 3])}
+
+    logs_writer.add_graph(model, dummy_input)
+
+    #                START OF TRAINING                 #
     print('Starting training...')
+
+    best_test_loss = float("inf")
 
     for epoch in range(1, args.num_epochs+1):
 
-        train_loss = train(epoch, model, loss, optimizer,
-                           dataloader, pair_generation_tnf,
-                           log_interval=args.log_interval,
-                           scheduler=scheduler)
+        # we don't need the average epoch loss so we assign it to _
+        _ = train(epoch, model, loss, optimizer,
+                  dataloader, pair_generation_tnf,
+                  log_interval=args.log_interval,
+                  scheduler=scheduler,
+                  tb_writer=logs_writer)
 
         test_loss = test(model, loss,
-                         dataloader_test, pair_generation_tnf)
+                         dataloader_test, pair_generation_tnf,
+                         epoch, logs_writer)
 
         # remember best loss
         is_best = test_loss < best_test_loss
@@ -227,6 +258,7 @@ def main():
                          },
                         is_best, checkpoint_path)
 
+    logs_writer.close()
     print('Done!')
 
 

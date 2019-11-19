@@ -8,3 +8,4 @@ sklearn
 scikit-image
 matplotlib
 requests
+tensorboard
