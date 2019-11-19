@@ -42,6 +42,12 @@ def parse_flags():
     # Optimization parameters
     parser.add_argument('--lr', type=float, default=0.001,
                         help='learning rate')
+    parser.add_argument('--lr_scheduler', type=str_to_bool,
+                        nargs='?', const=True, default=True,
+                        help='Bool (default True), whether to use a decaying lr_scheduler')
+    parser.add_argument('--lr_max_iter', type=int, default=1000,
+                        help='Number of steps between lr starting value and 1e-6 '
+                             '(lr default min) when choosing lr_scheduler')
     parser.add_argument('--momentum', type=float, default=0.9,
                         help='momentum constant')
     parser.add_argument('--num_epochs', type=int, default=10,
@@ -66,8 +72,6 @@ def parse_flags():
                         help='Whether csv dataset contains already pair of images')
     parser.add_argument('--log_interval', type=int, default=100,
                         help='Number of iterations between logs')
-    parser.add_argument('--lr_scheduler', type=str_to_bool, nargs='?', const=True, default=True,
-                        help='Bool (default True), whether to use a decaying lr_scheduler')
 
     return parser.parse_args()
 
@@ -118,15 +122,20 @@ def main():
     train_csv_path_list = glob(os.path.join(args.training_tnf_csv, '*train.csv'))
     if len(train_csv_path_list) > 1:
         print("!!!!WARNING!!!! multiple train csv files found, using first in glob order")
+    elif not len(train_csv_path_list):
+        raise FileNotFoundError("No training csv where found in the specified path!!!")
 
     train_csv_path = train_csv_path_list[0]
 
     val_csv_path_list = glob(os.path.join(args.training_tnf_csv, '*val.csv'))
     if len(val_csv_path_list) > 1:
         print("!!!!WARNING!!!! multiple train csv files found, using first in glob order")
+    elif not len(val_csv_path_list):
+        raise FileNotFoundError("No training csv where found in the specified path!!!")
 
     val_csv_path = val_csv_path_list[0]
 
+    # Initialize Dataset objects
     if args.coupled_dataset:
         # Dataset  for train and val if dataset is already coupled
         dataset = CoupledDataset(geometric_model=args.geometric_model,
@@ -174,8 +183,8 @@ def main():
 
     if args.lr_scheduler:
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
-                                                               T_max=1000,
-                                                               eta_min=0.000001)
+                                                               T_max=args.lr_max_iter,
+                                                               eta_min=1e-6)
         # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
     else:
         scheduler = False
