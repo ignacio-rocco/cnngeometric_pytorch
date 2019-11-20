@@ -127,7 +127,6 @@ for i, batch in enumerate(dataloader):
         # do affine only
         warped_points_aff_norm = pt.affPointTnf(theta_aff, target_points_norm)
         warped_points_aff = PointsToPixelCoords(warped_points_aff_norm, source_im_size)
-
     if do_tps:
         theta_tps = model_tps(batch)
 
@@ -166,12 +165,12 @@ for i, batch in enumerate(dataloader):
     print('Batch: [{}/{} ({:.0f}%)]'.format(i, len(dataloader), 100. * i / len(dataloader)))
 
 if do_aff:
-    PCK_aff = total_correct_points_aff / total_points
+    PCK_aff = float(total_correct_points_aff) / float(total_points)
     print('PCK affine:', PCK_aff)
 if do_tps:
-    PCK_tps = total_correct_points_tps / total_points
+    PCK_tps = float(total_correct_points_tps) / float(total_points)
     print('PCK tps:', PCK_tps)
 if do_aff and do_tps:
-    PCK_aff_tps = total_correct_points_aff_tps / total_points
+    PCK_aff_tps = float(total_correct_points_aff_tps) / float(total_points)
     print('PCK affine+tps:', PCK_aff_tps)
 print('Done!')

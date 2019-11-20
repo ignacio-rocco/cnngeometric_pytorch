@@ -19,9 +19,7 @@ If you use this code in your project, please cite use using:
 ````
 
 ## Dependencies ###
-  - Python 3
-  - pytorch > 0.2.0, torchvision
-  - numpy, skimage (included in conda)
+See `requirements.txt`
 
 ## Getting started ###
   - demo.py demonstrates the results on the ProposalFlow dataset

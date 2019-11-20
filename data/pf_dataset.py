@@ -28,8 +28,8 @@ class PFDataset(Dataset):
         self.train_data = pd.read_csv(csv_file)
         self.img_A_names = self.train_data.iloc[:, 0]
         self.img_B_names = self.train_data.iloc[:, 1]
-        self.point_A_coords = self.train_data.iloc[:, 2:22].as_matrix().astype('float')
-        self.point_B_coords = self.train_data.iloc[:, 22:].as_matrix().astype('float')
+        self.point_A_coords = self.train_data.iloc[:, 2:22].values.astype('float')
+        self.point_B_coords = self.train_data.iloc[:, 22:].values.astype('float')
         self.training_image_path = training_image_path
         self.transform = transform
         # no cuda as dataset is called from CPU threads in dataloader and produces confilct
