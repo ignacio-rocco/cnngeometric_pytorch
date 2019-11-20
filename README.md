@@ -28,6 +28,12 @@ If you use this code in your project, please cite use using:
   - train.py is the main training script
   - eval_pf.py evaluates on the ProposalFlow dataset
   
+## Logging Configuration ###
+
+  - For now it is implemented to log on TensorBoard just scalars of train and val loss
+  - It is possible to specify a --logdir as a parameter, otherwise the logging folder will be named as the checkpoint one with _tb_logs as suffix
+  - N.B. If is intended to use as logdir a GCP bucket it is necessary to install Tensorflow 
+  
 ## Trained models ###
 
 #### Using Streetview-synth dataset + VGG
@@ -41,3 +47,7 @@ If you use this code in your project, please cite use using:
 #### Using Pascal-synth dataset  + ResNet-101
   - [[Affine]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_affine_grid_loss_resnet_random.pth.tar), [[TPS]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_tps_grid_loss_resnet_random.pth.tar)
   - Results on PF: `PCK affine: 0.559`, `PCK tps: 0.582`, `PCK affine+tps: 0.676`
+
+#### Using a custom dataset
+  - It is possible to use a custom dataset, in order to do so is necessary to create a custom Dataset object and modify the serving function (ex. SynthPairTnf/CoupledPairTnf)
+  - In the case of the CoupledPairTnf class, the dataset was in the format ['image_a', 'image_b', 'vertices_a', *theta_components] where theta is the affine matrix
