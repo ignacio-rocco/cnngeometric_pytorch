@@ -3,6 +3,7 @@ __pycache__
 training_data/seasons/
 training_data/day-night/
 training_data/theta.csv
+training_data/all*
 scripts/
 datasets/
 notebooks/
