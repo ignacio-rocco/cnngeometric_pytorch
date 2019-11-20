@@ -80,7 +80,7 @@ def validate_model(model, loss_fn,
     print('Validation set: Average loss: {:.4f}'.format(val_loss))
     if tb_writer:
         tb_writer.add_scalar('val loss',
-                             val_loss.data.item(),
+                             val_loss,
                              epoch)
 
     return val_loss
