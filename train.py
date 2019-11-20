@@ -212,10 +212,12 @@ def main():
     if args.use_mse_loss:
         ckpt = args.trained_models_fn + '_' + args.geometric_model + '_mse_loss' + args.feature_extraction_cnn
         checkpoint_path = os.path.join(args.trained_models_dir,
+                                       args.trained_models_fn,
                                        ckpt + '.pth.tar')
     else:
         ckpt = args.trained_models_fn + '_' + args.geometric_model + '_grid_loss' + args.feature_extraction_cnn
         checkpoint_path = os.path.join(args.trained_models_dir,
+                                       args.trained_models_fn,
                                        ckpt + '.pth.tar')
     if not os.path.exists(args.trained_models_dir):
         os.mkdir(args.trained_models_dir)
