@@ -33,6 +33,12 @@ using synthetically warped image pairs and strong supervision
 
 
 def parse_flags():
+    """
+    Fn to parse arguments to pass to main func
+
+    :return args: Object which attributes are the flags values accessible through args.flag
+    """
+
     # Argument parsing
     parser = argparse.ArgumentParser(description='CNNGeometric PyTorch implementation')
     # Paths
