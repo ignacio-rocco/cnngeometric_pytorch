@@ -186,8 +186,8 @@ def main():
     dataloader = DataLoader(dataset, batch_size=args.batch_size,
                             shuffle=True, num_workers=4)
 
-    dataloader_test = DataLoader(dataset_val, batch_size=args.batch_size,
-                                 shuffle=True, num_workers=4)
+    dataloader_val = DataLoader(dataset_val, batch_size=args.batch_size,
+                                shuffle=True, num_workers=4)
 
     # Optimizer and eventual scheduler
     optimizer = optim.Adam(model.FeatureRegression.parameters(), lr=args.lr)
@@ -231,7 +231,7 @@ def main():
     #                START OF TRAINING                 #
     print('Starting training...')
 
-    best_test_loss = float("inf")
+    best_val_loss = float("inf")
 
     for epoch in range(1, args.num_epochs+1):
 
@@ -242,18 +242,18 @@ def main():
                   scheduler=scheduler,
                   tb_writer=logs_writer)
 
-        test_loss = validate_model(model, loss,
-                                   dataloader_test, pair_generation_tnf,
-                                   epoch, logs_writer)
+        val_loss = validate_model(model, loss,
+                                  dataloader_val, pair_generation_tnf,
+                                  epoch, logs_writer)
 
         # remember best loss
-        is_best = test_loss < best_test_loss
-        best_test_loss = min(test_loss, best_test_loss)
+        is_best = val_loss < best_val_loss
+        best_val_loss = min(val_loss, best_val_loss)
         save_checkpoint({
                          'epoch': epoch + 1,
                          'args': args,
                          'state_dict': model.state_dict(),
-                         'best_test_loss': best_test_loss,
+                         'best_val_loss': best_val_loss,
                          'optimizer': optimizer.state_dict(),
                          },
                         is_best, checkpoint_path)
