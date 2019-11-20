@@ -42,7 +42,7 @@ def train(epoch, model, loss_fn, optimizer,
             if tb_writer:
                 tb_writer.add_scalar('learning rate',
                                      scheduler.get_lr()[-1],
-                                     epoch * len(dataloader) + batch_idx)
+                                     (epoch - 1) * len(dataloader) + batch_idx)
 
         train_loss += loss.data.cpu().numpy().item()
 
@@ -52,7 +52,7 @@ def train(epoch, model, loss_fn, optimizer,
             if tb_writer:
                 tb_writer.add_scalar('training loss',
                                      loss.data.item(),
-                                     epoch * len(dataloader) + batch_idx)
+                                     (epoch - 1) * len(dataloader) + batch_idx)
 
     train_loss /= len(dataloader)
     print('Train set: Average loss: {:.4f}'.format(train_loss))
