@@ -21,7 +21,7 @@ from geotnf.transformation import CoupledPairTnf
 
 from image.normalization import NormalizeImageDict
 
-from util.train_test_fn import train, test
+from util.train_test_fn import train, validate_model
 from util.torch_util import save_checkpoint, str_to_bool
 
 """
@@ -242,9 +242,9 @@ def main():
                   scheduler=scheduler,
                   tb_writer=logs_writer)
 
-        test_loss = test(model, loss,
-                         dataloader_test, pair_generation_tnf,
-                         epoch, logs_writer)
+        test_loss = validate_model(model, loss,
+                                   dataloader_test, pair_generation_tnf,
+                                   epoch, logs_writer)
 
         # remember best loss
         is_best = test_loss < best_test_loss

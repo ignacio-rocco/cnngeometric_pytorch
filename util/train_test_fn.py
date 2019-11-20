@@ -55,12 +55,12 @@ def train(epoch, model, loss_fn, optimizer,
     return train_loss
 
 
-def test(model, loss_fn,
-         dataloader, pair_generation_tnf,
-         epoch, tb_writer=None):
+def validate_model(model, loss_fn,
+                   dataloader, pair_generation_tnf,
+                   epoch, tb_writer=None):
 
     model.eval()
-    test_loss = 0
+    val_loss = 0
     for batch_idx, batch in enumerate(dataloader):
         tnf_batch = pair_generation_tnf(batch)
         theta = model(tnf_batch)
@@ -70,13 +70,13 @@ def test(model, loss_fn,
         else:
             loss = loss_fn(theta, tnf_batch['theta_GT'])
 
-        test_loss += loss.data.cpu().numpy().item()
+        val_loss += loss.data.cpu().numpy().item()
 
-    test_loss /= len(dataloader)
-    print('Test set: Average loss: {:.4f}'.format(test_loss))
+    val_loss /= len(dataloader)
+    print('Validation set: Average loss: {:.4f}'.format(val_loss))
     if tb_writer:
-        tb_writer.add_scalar('test loss',
-                             test_loss.data.item(),
+        tb_writer.add_scalar('val loss',
+                             val_loss.data.item(),
                              epoch)
 
-    return test_loss
+    return val_loss
