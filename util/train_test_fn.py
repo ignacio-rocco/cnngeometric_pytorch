@@ -39,6 +39,10 @@ def train(epoch, model, loss_fn, optimizer,
 
         if scheduler:
             scheduler.step()
+            if tb_writer:
+                tb_writer.add_scalar('learning rate',
+                                     scheduler.get_lr()[-1],
+                                     epoch * len(dataloader) + batch_idx)
 
         train_loss += loss.data.cpu().numpy().item()
 
