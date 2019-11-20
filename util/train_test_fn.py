@@ -75,7 +75,7 @@ def test(model, loss_fn,
     test_loss /= len(dataloader)
     print('Test set: Average loss: {:.4f}'.format(test_loss))
     if tb_writer:
-        tb_writer.add_scalar('training loss',
+        tb_writer.add_scalar('test loss',
                              test_loss.data.item(),
                              epoch)
 
