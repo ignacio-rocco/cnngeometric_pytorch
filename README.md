@@ -55,5 +55,5 @@ If you use this code in your project, please cite use using:
   - Example of coupled dataset line:
   
   
-    image_a, image_b, vertices_a, A22, A21, A12, A11, ty, tx
+    image_a, image_b, vertices_a, A22, A21, A12, A11, ty, tx  
     image_a.jpg,image_b.png,"[(0.499, 0.094), (0.810, 0.100), (0.795, 0.437), (0.485, 0.430)]",1.0017,-0.0179,0.0390,0.9875,-0.0074,-0.0047
