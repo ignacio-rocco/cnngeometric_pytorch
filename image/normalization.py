@@ -41,7 +41,7 @@ def normalize_image(image, forward=True,
         if image.is_cuda:
             mean = mean.cuda()
             std = std.cuda()
-        if isinstance(image, torch.autograd.variable.Variable):
+        if isinstance(image, torch.autograd.Variable):
             mean = Variable(mean, requires_grad=False)
             std = Variable(std, requires_grad=False)
         if forward:
