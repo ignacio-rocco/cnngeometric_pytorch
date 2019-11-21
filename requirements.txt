@@ -1,0 +1,11 @@
+tqdm
+opencv-python
+numpy
+pandas
+torch
+torchvision
+sklearn
+scikit-image
+matplotlib
+requests
+tensorboard
