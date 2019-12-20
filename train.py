@@ -98,7 +98,7 @@ def main():
     args = parse_flags()
 
     use_cuda = torch.cuda.is_available()
-
+    device = torch.device('cuda') if use_cuda else torch.device('cpu')
     # Seed
     torch.manual_seed(args.seed)
     if use_cuda:
@@ -230,9 +230,9 @@ def main():
 
     logs_writer = SummaryWriter(tb_dir)
     # add graph, to do so we have to generate a dummy input to pass along with the graph
-    dummy_input = {'source_image': torch.rand([args.batch_size, 3, 240, 240]),
-                   'target_image': torch.rand([args.batch_size, 3, 240, 240]),
-                   'theta_GT': torch.rand([16, 2, 3])}
+    dummy_input = {'source_image': torch.rand([args.batch_size, 3, 240, 240], device = device),
+                   'target_image': torch.rand([args.batch_size, 3, 240, 240], device = device),
+                   'theta_GT': torch.rand([16, 2, 3], device = device)}
 
     logs_writer.add_graph(model, dummy_input)
 
