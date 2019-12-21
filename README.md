@@ -1,57 +1,78 @@
 # CNNGeometric PyTorch implementation
 
-![](http://www.di.ens.fr/willow/research/cnngeometric/images/teaser.png)
+![](http://www.di.ens.fr/willow/research/cnngeometric/images/code_teaser.png)
 
 This is the implementation of the paper: 
 
-I. Rocco, R. Arandjelović and J. Sivic. Convolutional neural network architecture for geometric matching. CVPR 2017 [[website](http://www.di.ens.fr/willow/research/cnngeometric/)][[arXiv](https://arxiv.org/abs/1703.05593)]
+I. Rocco, R. Arandjelović and J. Sivic. Convolutional neural network architecture for geometric matching. [[website](http://www.di.ens.fr/willow/research/cnngeometric/)][[CVPR version](https://arxiv.org/abs/1703.05593)][[Extended TPAMI version](https://hal.archives-ouvertes.fr/hal-01859616/file/cnngeometric_pami.pdf)]
 
-using PyTorch ([for MatConvNet implementation click here](https://github.com/ignacio-rocco/cnngeometric_matconvnet)).
 
-If you use this code in your project, please cite use using:
-````
-@InProceedings{Rocco17,
-  author       = "Rocco, I. and Arandjelovi\'c, R. and Sivic, J.",
-  title        = "Convolutional neural network architecture for geometric matching",
-  booktitle    = "Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition",
-  year         = "2017",
-}
-````
 
-## Dependencies ###
+## Dependencies 
 See `requirements.txt`
 
-## Getting started ###
-  - demo.py demonstrates the results on the ProposalFlow dataset
-  - train.py is the main training script
-  - eval_pf.py evaluates on the ProposalFlow dataset
-  
-## Logging Configuration ###
+## Demo 
+Please see the `demo.py` script or the `demo_notebook.ipynb` Jupyter Notebook.
+
+## Training
+You can train the model using the `train.py` script in the following way:
+
+```bash
+python train.py  --geometric-model affine
+```
+For a full set of options, run `python train.py -h`.
+
+##### Logging Configuration 
 
   - For now it is implemented to log on TensorBoard just scalars of train and val loss
   - It is possible to specify a --logdir as a parameter, otherwise the logging folder will be named as the checkpoint one with _tb_logs as suffix
   - N.B. If is intended to use as logdir a GCP bucket it is necessary to install Tensorflow 
   
-## Trained models ###
+## Evaluation
+You can evaluate the trained models using the `eval.py` script in the following way:
 
-#### Using Streetview-synth dataset + VGG
-  - [[Affine]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_affine_grid_loss.pth.tar), [[TPS]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_tps_grid_loss.pth.tar)
-  - Results on PF: `PCK affine: 0.472`, `PCK tps: 0.513`, `PCK affine+tps: 0.572`
+```bash
+python eval.py  --model-1 trained_models/best_streetview_checkpoint_adam_hom_grid_loss_PAMI.pth.tar --eval-dataset pf
+```
 
-#### Using Pascal-synth dataset  + VGG
-  - [[Affine]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_affine_grid_loss.pth.tar), [[TPS]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_tps_grid_loss.pth.tar)
-  - Results on PF: `PCK affine: 0.478`, `PCK tps: 0.428`, `PCK affine+tps: 0.568`
+You can also evaluate a two-stage model in the following way:
 
-#### Using Pascal-synth dataset  + ResNet-101
-  - [[Affine]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_affine_grid_loss_resnet_random.pth.tar), [[TPS]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_pascal_checkpoint_adam_tps_grid_loss_resnet_random.pth.tar)
-  - Results on PF: `PCK affine: 0.559`, `PCK tps: 0.582`, `PCK affine+tps: 0.676`
+```bash
+python eval.py --model-1 trained_models/best_streetview_checkpoint_adam_hom_grid_loss_PAMI.pth.tar --model-2 trained_models/best_streetview_checkpoint_adam_tps_grid_loss_PAMI.pth.tar --eval-dataset pf
+```
 
-#### Using a custom dataset
-  - It is possible to use a custom dataset, in order to do so is necessary to create a custom Dataset object and modify the serving function (ex. SynthPairTnf/CoupledPairTnf)
-  - In the case of the CoupledPairTnf class, the dataset was in the format ['image_a', 'image_b', 'vertices_a', *theta_components] where theta is the affine matrix
-  - N.B. when using a custom dataset make sure that bounding boxes and points contained are normalized over the dimensions of the image, transformations as well should be computed from normalized points
-  - Example of coupled dataset line:
-  
-  
-    image_a, image_b, vertices_a, A22, A21, A12, A11, ty, tx  
-    image_a.jpg,image_b.png,"[(0.499, 0.094), (0.810, 0.100), (0.795, 0.437), (0.485, 0.430)]",1.0017,-0.0179,0.0390,0.9875,-0.0074,-0.0047
+The `eval.py` scripts implements the evaluation on the PF-Willow/PF-PASCAL/Caltech-101 and TSS datasets.  For a full set of options, run `python eval.py -h`.
+
+### Trained models 
+
+| Model | PF-Willow (PCK) |
+| --- | --- | 
+| [[Affine - VGG - StreetView]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_affine_grid_loss_PAMI.pth.tar) |  48.4 |
+| [[Homography - VGG - StreetView]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_hom_grid_loss_PAMI.pth.tar) |  48.6 |
+| [[TPS - VGG - StreetView]](http://www.di.ens.fr/willow/research/cnngeometric/trained_models/pytorch/best_streetview_checkpoint_adam_tps_grid_loss_PAMI.pth.tar) |  53.8 |
+
+
+### BibTeX
+
+If you use this code in your project, please cite us using:
+```bibtex
+@InProceedings{Rocco17,
+  author = {Rocco, I. and Arandjelovi\'c, R. and Sivic, J.},
+  title  = {Convolutional neural network architecture for geometric matching},
+  booktitle = {{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition}},
+  year = {2017},
+}
+```
+
+or
+
+```bibtex
+@Article{Rocco18,
+  author = {Rocco, I. and Arandjelovi\'c, R. and Sivic, J.},
+  title  = {Convolutional neural network architecture for geometric matching},
+  journal = {{IEEE Transactions on Pattern Analysis and Machine Intelligence}},
+  number = {41},
+  pages = {2553--2567},
+  year = {2018},
+}
+```
